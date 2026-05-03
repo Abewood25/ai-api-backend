@@ -1,0 +1,10 @@
+.env
+.venv/
+deploy.zip
+__pycache__/
+*.pyc
+faiss_index/
+.elasticbeanstalk/
+.ebextensions/
+test-unzip/
+testzip/

@@ -1,0 +1,6 @@
+AI Engineering involves designing, building, and deploying AI systems in production.
+FastAPI is a modern Python web framework used to build APIs quickly and efficiently.
+AWS Elastic Beanstalk is a service used to deploy and manage applications in the cloud.
+RAG (Retrieval-Augmented Generation) improves AI responses by adding relevant context from external data.
+Vector databases store embeddings and allow semantic search for relevant information.
+OpenAI APIs can generate natural language responses based on prompts and context.
