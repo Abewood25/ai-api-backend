@@ -36,6 +36,9 @@ def health():
 def ask(request: AskRequest):
     context = get_context(request.question)
 
+    print(f"QUESTION: {request.question}")
+    print(f"CONTEXT USED: {context}")
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
