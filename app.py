@@ -1,13 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from openai import OpenAI
 from rag import get_context
-from openai import APIConnectionError, APIStatusError, RateLimitError
-import os
 
-
-# ✅ DEFINE APP FIRST
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,26 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Then define models
+client = OpenAI()
+
 class AskRequest(BaseModel):
     question: str
 
-# ✅ Then OpenAI client
-client = OpenAI()
-
-# ✅ Then routes
-@app.get("/openai-test")
-def openai_test():
-    try:
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "Say hello"}],
-            max_tokens=10,
-        )
-        return {"ok": True, "text": resp.choices[0].message.content}
-    except Exception as e:
-        return {"ok": False, "error": str(e)}
-    
 @app.get("/")
 def root():
     return {"message": "AI API is running"}
@@ -44,11 +27,32 @@ def root():
 def health():
     return {"status": "healthy"}
 
+@app.get("/openai-test")
+def openai_test():
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "user", "content": "Say hello"}
+            ]
+        )
+
+        return {
+            "ok": True,
+            "response": response.choices[0].message.content
+        }
+
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": str(e)
+        }
+
 @app.post("/ask")
 def ask(request: AskRequest):
-    context = get_context(request.question)
-
     try:
+        context = get_context(request.question)
+
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
