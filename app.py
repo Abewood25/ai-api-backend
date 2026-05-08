@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from rag import get_context
-from openai import OpenAI
+from openai import APIConnectionError, APIStatusError, RateLimitError
 import os
 
 
@@ -24,6 +24,18 @@ class AskRequest(BaseModel):
 client = OpenAI()
 
 # ✅ Then routes
+@app.get("/openai-test")
+def openai_test():
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": "Say hello"}],
+            max_tokens=10,
+        )
+        return {"ok": True, "text": resp.choices[0].message.content}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+    
 @app.get("/")
 def root():
     return {"message": "AI API is running"}
@@ -36,12 +48,10 @@ def health():
 def ask(request: AskRequest):
     context = get_context(request.question)
 
-    print(f"QUESTION: {request.question}")
-    print(f"CONTEXT USED: {context}")
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
             {
                 "role": "system",
                 "content": "Use the provided context to answer the question. If unsure, say you don’t know."
