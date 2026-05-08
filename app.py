@@ -21,7 +21,7 @@ class AskRequest(BaseModel):
     question: str
 
 # ✅ Then OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI()
 
 # ✅ Then routes
 @app.get("/")
