@@ -52,20 +52,25 @@ def ask(request: AskRequest):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-            {
-                "role": "system",
-                "content": "Use the provided context to answer the question. If unsure, say you don’t know."
-            },
-            {
-                "role": "user",
-                "content": f"Context: {context}\n\nQuestion: {request.question}"
-            }
-        ]
-    )
+                {
+                    "role": "system",
+                    "content": "Use the provided context to answer the question."
+                },
+                {
+                    "role": "user",
+                    "content": f"Context: {context}\n\nQuestion: {request.question}"
+                }
+            ]
+        )
 
-    return {
-        "question": request.question,
-        "context_used": context,
-        "answer": response.choices[0].message.content
-    }
+        return {
+            "question": request.question,
+            "context_used": context,
+            "answer": response.choices[0].message.content
+        }
+
+    except Exception as e:
+        return {
+            "error": str(e)
+        }
 
