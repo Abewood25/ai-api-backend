@@ -20,21 +20,13 @@ def get_embedding(text: str):
 def get_context(question: str) -> str:
     try:
         with open("data.txt", "r") as f:
-            docs = [line.strip() for line in f.readlines() if line.strip()]
+            docs = f.readlines()
 
-        question_embedding = get_embedding(question)
-
-        scored_docs = []
         for doc in docs:
-            doc_embedding = get_embedding(doc)
-            score = cosine_similarity(question_embedding, doc_embedding)
-            scored_docs.append((score, doc))
+            if any(word.lower() in doc.lower() for word in question.split()):
+                return doc.strip()
 
-        scored_docs.sort(reverse=True)
-
-        top_docs = [doc for score, doc in scored_docs[:3]]
-
-        return "\n".join(top_docs) if top_docs else "No relevant context found."
+        return "No relevant context found."
 
     except Exception as e:
         return f"Error loading context: {str(e)}"
