@@ -27,54 +27,27 @@ def root():
 def health():
     return {"status": "healthy"}
 
-@app.get("/openai-test")
-def openai_test():
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "user", "content": "Say hello"}
-            ]
-        )
-
-        return {
-            "ok": True,
-            "response": response.choices[0].message.content
-        }
-
-    except Exception as e:
-        return {
-            "ok": False,
-            "error": str(e)
-        }
-
 @app.post("/ask")
 def ask(request: AskRequest):
-    try:
-        context = get_context(request.question)
+    context = get_context(request.question)
 
+    try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "system",
-                    "content": "Use the provided context to answer the question."
-                },
-                {
-                    "role": "user",
-                    "content": f"Context: {context}\n\nQuestion: {request.question}"
-                }
-            ]
+                {"role": "system", "content": "Use the provided context to answer the question."},
+                {"role": "user", "content": f"Context: {context}\n\nQuestion: {request.question}"}
+            ],
         )
 
-        return {
-            "question": request.question,
-            "context_used": context,
-            "answer": response.choices[0].message.content
-        }
+        answer = response.choices[0].message.content
 
     except Exception as e:
-        return {
-            "error": str(e)
-        }
+        answer = f"OpenAI error: {str(e)}"
+
+    return {
+        "question": request.question,
+        "context_used": context,
+        "answer": answer
+    }
 
