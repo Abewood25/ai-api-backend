@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
+from pypdf import PdfReader
 from rag import get_context
 
 app = FastAPI()
@@ -35,9 +36,15 @@ def ask(request: AskRequest):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Use the provided context to answer the question."},
-                {"role": "user", "content": f"Context: {context}\n\nQuestion: {request.question}"}
-            ],
+                {
+                    "role": "system",
+                    "content": "Use the provided context to answer the question."
+                },
+                {
+                    "role": "user",
+                    "content": f"Context: {context}\n\nQuestion: {request.question}"
+                }
+            ]
         )
 
         answer = response.choices[0].message.content
@@ -51,3 +58,32 @@ def ask(request: AskRequest):
         "answer": answer
     }
 
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+
+        with open("uploaded.pdf", "wb") as f:
+            f.write(contents)
+
+        reader = PdfReader("uploaded.pdf")
+
+        extracted_text = ""
+
+        for page in reader.pages:
+            text = page.extract_text()
+
+            if text:
+                extracted_text += text + "\n"
+
+        with open("data.txt", "w", encoding="utf-8") as f:
+            f.write(extracted_text)
+
+        return {
+            "message": "PDF uploaded and processed successfully"
+        }
+
+    except Exception as e:
+        return {
+            "error": str(e)
+        }
