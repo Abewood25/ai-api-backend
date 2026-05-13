@@ -1,8 +1,8 @@
 from fastapi import FastAPI, UploadFile, File
+from pypdf import PdfReader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
-from pypdf import PdfReader
 from rag import get_context
 
 app = FastAPI()
