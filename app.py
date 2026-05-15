@@ -76,11 +76,20 @@ async def upload_file(file: UploadFile = File(...)):
             if text:
                 extracted_text += text + "\n"
 
+        chunks = []
+        chunk_size = 1000
+
+        for i in range(0, len(extracted_text), chunk_size):
+            chunk = extracted_text[i:i + chunk_size]
+            chunks.append(chunk)
+
         with open("data.txt", "w", encoding="utf-8") as f:
-            f.write(extracted_text)
+            for chunk in chunks:
+                f.write(chunk.replace("\n", " ") + "\n")
 
         return {
-            "message": "PDF uploaded and processed successfully"
+            "message": "PDF uploaded and processed successfully",
+            "chunks_created": len(chunks)
         }
 
     except Exception as e:
