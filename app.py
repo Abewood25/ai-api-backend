@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
+from vector_store import add_chunks, search_chunks
 from pypdf import PdfReader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -30,7 +31,8 @@ def health():
 
 @app.post("/ask")
 def ask(request: AskRequest):
-    context = get_context(request.question)
+    context_chunks = search_chunks(request.question)
+    context = "\n".join(context_chunks)
 
     try:
         response = client.chat.completions.create(
@@ -82,6 +84,7 @@ async def upload_file(file: UploadFile = File(...)):
         for i in range(0, len(extracted_text), chunk_size):
             chunk = extracted_text[i:i + chunk_size]
             chunks.append(chunk)
+            add_chunks(chunks)
 
         with open("data.txt", "w", encoding="utf-8") as f:
             for chunk in chunks:
