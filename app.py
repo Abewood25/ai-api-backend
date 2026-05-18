@@ -139,3 +139,54 @@ async def upload_file(file: UploadFile = File(...)):
         return {
             "error": str(e)
         }
+@app.get("/debug-openai")
+def debug_openai():
+    try:
+        api_key = os.getenv("OPENAI_API_KEY")
+
+        if not api_key:
+            return {"ok": False, "error": "OPENAI_API_KEY is missing"}
+
+        response = requests.get(
+            "https://api.openai.com/v1/models",
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=15
+        )
+
+        return {
+            "ok": response.ok,
+            "status_code": response.status_code,
+            "response": response.text[:500]
+        }
+
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": repr(e)
+        }
+
+@app.get("/debug-openai")
+def debug_openai():
+    try:
+        api_key = os.getenv("OPENAI_API_KEY")
+
+        if not api_key:
+            return {"ok": False, "error": "OPENAI_API_KEY is missing"}
+
+        response = requests.get(
+            "https://api.openai.com/v1/models",
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=15
+        )
+
+        return {
+            "ok": response.ok,
+            "status_code": response.status_code,
+            "response": response.text[:500]
+        }
+
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": repr(e)
+        }
