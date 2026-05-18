@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 from rag import get_context
+import os
+import requests
 
 app = FastAPI()
 
@@ -30,26 +32,39 @@ def health():
     return {"status": "healthy"}
 
 @app.post("/ask")
+@app.post("/ask")
 def ask(request: AskRequest):
     context_chunks = search_chunks(request.question)
     context = "\n".join(context_chunks)
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Use the provided context to answer the question."
-                },
-                {
-                    "role": "user",
-                    "content": f"Context: {context}\n\nQuestion: {request.question}"
-                }
-            ]
+        api_key = os.getenv("OPENAI_API_KEY")
+
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "gpt-4o-mini",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Use the provided context to answer the question."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Context: {context}\n\nQuestion: {request.question}"
+                    }
+                ]
+            },
+            timeout=30
         )
 
-        answer = response.choices[0].message.content
+        response.raise_for_status()
+        data = response.json()
+        answer = data["choices"][0]["message"]["content"]
 
     except Exception as e:
         answer = f"OpenAI error: {str(e)}"
