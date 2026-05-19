@@ -6,7 +6,7 @@ client = chromadb.PersistentClient(path="./chroma_db")
 collection = client.get_or_create_collection("documents")
 
 def get_embedding(text: str):
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
 
     response = requests.post(
         "https://api.openai.com/v1/embeddings",

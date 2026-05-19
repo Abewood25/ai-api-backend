@@ -34,7 +34,7 @@ def health():
 @app.get("/debug-openai")
 def debug_openai():
     try:
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY", "").strip()
 
         if not api_key:
             return {"ok": False, "error": "OPENAI_API_KEY is missing"}
