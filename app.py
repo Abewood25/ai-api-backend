@@ -1,9 +1,8 @@
 from fastapi import FastAPI, UploadFile, File
-from vector_store import add_chunks, search_chunks
+from vector_store import add_chunks, search_chunks, list_documents
 from pypdf import PdfReader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from openai import OpenAI
 from rag import get_context
 import os
 import requests
@@ -17,8 +16,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-client = OpenAI()
 
 class AskRequest(BaseModel):
     question: str
@@ -100,10 +97,17 @@ def ask(request: AskRequest):
         "answer": answer
     }
 
+@app.get("/documents")
+def documents():
+    return {
+        "documents": list_documents()
+    }
+
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     try:
         contents = await file.read()
+        filename = file.filename
 
         with open("uploaded.pdf", "wb") as f:
             f.write(contents)
@@ -124,7 +128,7 @@ async def upload_file(file: UploadFile = File(...)):
         for i in range(0, len(extracted_text), chunk_size):
             chunk = extracted_text[i:i + chunk_size]
             chunks.append(chunk)
-            add_chunks(chunks)
+            add_chunks(chunks, filename)
 
         with open("data.txt", "w", encoding="utf-8") as f:
             for chunk in chunks:
